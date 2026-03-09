@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import './index.css';
 
+const SHEET_URL = "https://script.google.com/macros/s/AKfycbzku3AU1EBBMyC2LhGFyBjCepBZesUkF8i51HniHkiisnSH5c6TjUUkmiBmnr8bWkMo/exec";
 const BRANCHES = [
-  { name: "ECIL", full: "Vignan School – ECIL", address: "Lotus Colony, Shiva Sai Enclave, Shilpa Nagar, Nagaram, ECIL, Telangana 500083", phone: "+91 97019 33455" },
-  { name: "Patancheru", full: "Vignan School – Patancheru", address: "Chinna Kanjarla, Doultabad Road Patancheru, Hyderabad, Telangana 502319", phone: "+91 97019 33455" },
-  { name: "Medchal", full: "Vignan School – Medchal", address: "Near Santha Bio Tech, Court Road, Athvelly, Medchal, Secunderabad, Telangana 501401", phone: "+91 97019 33455" },
-  { name: "Ghatkesar", full: "Vignan School – Ghatkesar", address: "Kondapur Village, Ghatkesar Mandal & Post Ranga Reddy District, Hyderabad, Telangana 501301", phone: "+91 97019 33455" },
+  { name: "ECIL", full: "Vignan School – ECIL", address: "Plot No. 12, ECIL Cross Roads, Hyderabad – 500062", phone: "+91 98765 43210" },
+  { name: "Patancheru", full: "Vignan School – Patancheru", address: "Survey No. 45, Patancheru, Sangareddy – 502319", phone: "+91 98765 43211" },
+  { name: "Medchal", full: "Vignan School – Medchal", address: "NH-44, Medchal Road, Medchal – 501401", phone: "+91 98765 43212" },
+  { name: "Ghatkesar", full: "Vignan School – Ghatkesar", address: "Beside RTC Bus Stand, Ghatkesar – 501301", phone: "+91 98765 43213" },
 ];
 
 const FAQS = [
@@ -23,9 +24,10 @@ const TESTIMONIALS = [
 ];
 
 export default function App() {
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [openFaq, setOpenFaq] = useState(null);
   const [form, setForm] = useState({ name: "", parent: "", phone: "", grade: "", branch: "" });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [cd, setCd] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
@@ -52,229 +54,93 @@ export default function App() {
     return () => clearInterval(id);
   }, []);
 
-  const submit = () => {
-    if (!form.name || !form.phone || !form.grade || !form.branch) {
-      alert("Please fill all required fields!");
-      return;
-    }
+const submit = async () => {
+  if (!form.name || !form.phone || !form.grade || !form.branch) {
+    alert("Please fill all required fields!");
+    return;
+  }
+  setLoading(true);
+  try {
+    const params = new URLSearchParams({
+      name: form.name,
+      parent: form.parent,
+      phone: form.phone,
+      grade: form.grade,
+      branch: form.branch,
+    });
+    await fetch(SHEET_URL + "?" + params.toString(), {
+      method: "GET",
+      mode: "no-cors",
+    });
     setSubmitted(true);
-  };
-
-  const goForm = () => {
-    document.getElementById("reg-form")?.scrollIntoView({ behavior: "smooth" });
-  };
-
+  } catch (err) {
+    alert("Something went wrong. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
   return (
     <>
       <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Bebas+Neue&display=swap" rel="stylesheet" />
       <style>{`
-        /* ── RESET & BASE ── */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
-
-        /* CRITICAL: override Vite default #root max-width */
-        #root {
-          width: 100% !important;
-          max-width: 100% !important;
-          margin: 0 !important;
-          padding: 0 !important;
-        }
-
-        .app {
-          width: 100%;
-          overflow-x: hidden;
-          font-family: 'Nunito', sans-serif;
-          color: #1a1a2e;
-          background: #f0f4ff;
-        }
-
-        /* ── NAV ── */
-        .nav {
-          position: fixed; top: 0; left: 0;
-          width: 100%; z-index: 999;
-          display: flex; align-items: center; justify-content: space-between;
-          padding: 12px 40px;
-          transition: all 0.3s;
-        }
-        .nav.solid {
-          background: rgba(255,255,255,0.97);
-          box-shadow: 0 2px 20px rgba(0,0,0,0.08);
-          backdrop-filter: blur(12px);
-        }
-
-        /* ── HERO ── */
-        .hero {
-          width: 100%;
-          background: linear-gradient(150deg, #0a1f6e 0%, #1a56db 58%, #1e3a8a 100%);
-          padding-top: 80px;
-        }
-        .hero-grid {
-          width: 100%;
-          max-width: 1300px;
-          margin: 0 auto;
-          padding: 60px 60px 56px;
-          display: grid;
-          grid-template-columns: 1fr 430px;
-          gap: 60px;
-          align-items: start;
-        }
-        .hl {
-          font-family: 'Bebas Neue', sans-serif;
-          font-size: 72px; line-height: 0.95;
-          letter-spacing: 2px; color: #fff;
-        }
-
-        /* ── STATS ── */
-        .stats {
-          width: 100%;
-          background: rgba(0,0,0,0.22);
-          border-top: 1px solid rgba(255,255,255,0.1);
-          display: flex; flex-wrap: wrap;
-          justify-content: space-around;
-          gap: 12px; padding: 24px 60px;
-        }
-
-        /* ── FORM ── */
-        .fcard {
-          width: 100%; background: #fff;
-          border-radius: 22px; padding: 38px 30px 30px;
-          box-shadow: 0 28px 80px rgba(0,0,0,0.3);
-          position: relative;
-        }
-        .fi {
-          width: 100%; padding: 13px 16px;
-          border: 2px solid #dbeafe; border-radius: 10px;
-          font-size: 15px; font-family: 'Nunito', sans-serif;
-          color: #1a1a2e; background: #fff; outline: none;
-          appearance: none; -webkit-appearance: none;
-          transition: border-color 0.2s, box-shadow 0.2s;
-        }
+        #root { width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
+        .app { width: 100%; overflow-x: hidden; font-family: 'Nunito', sans-serif; color: #1a1a2e; background: #f0f4ff; }
+        .nav { position: fixed; top: 0; left: 0; width: 100%; z-index: 999; display: flex; align-items: center; justify-content: space-between; padding: 12px 40px; transition: all 0.3s; }
+        .nav.solid { background: rgba(255,255,255,0.97); box-shadow: 0 2px 20px rgba(0,0,0,0.08); backdrop-filter: blur(12px); }
+        .hero { width: 100%; background: linear-gradient(150deg, #0a1f6e 0%, #1a56db 58%, #1e3a8a 100%); padding-top: 80px; }
+        .hero-grid { width: 100%; max-width: 1300px; margin: 0 auto; padding: 60px 60px 56px; display: grid; grid-template-columns: 1fr 430px; gap: 60px; align-items: start; }
+        .hl { font-family: 'Bebas Neue', sans-serif; font-size: 72px; line-height: 0.95; letter-spacing: 2px; color: #fff; }
+        .stats { width: 100%; background: rgba(0,0,0,0.22); border-top: 1px solid rgba(255,255,255,0.1); display: flex; flex-wrap: wrap; justify-content: space-around; gap: 12px; padding: 24px 60px; }
+        .fcard { width: 100%; background: #fff; border-radius: 22px; padding: 38px 30px 30px; box-shadow: 0 28px 80px rgba(0,0,0,0.3); position: relative; }
+        .fi { width: 100%; padding: 13px 16px; border: 2px solid #dbeafe; border-radius: 10px; font-size: 15px; font-family: 'Nunito', sans-serif; color: #1a1a2e; background: #fff; outline: none; appearance: none; -webkit-appearance: none; transition: border-color 0.2s, box-shadow 0.2s; }
         .fi:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.12); }
-
-        /* ── BUTTONS ── */
-        .btn-o {
-          background: linear-gradient(135deg,#f97316,#dc2626);
-          color: #fff; border: none; border-radius: 50px;
-          font-family: 'Nunito',sans-serif; font-weight: 800;
-          cursor: pointer; transition: transform 0.18s, box-shadow 0.18s;
-          box-shadow: 0 6px 22px rgba(249,115,22,0.44);
-        }
+        .btn-o { background: linear-gradient(135deg,#f97316,#dc2626); color: #fff; border: none; border-radius: 50px; font-family: 'Nunito',sans-serif; font-weight: 800; cursor: pointer; transition: transform 0.18s, box-shadow 0.18s; box-shadow: 0 6px 22px rgba(249,115,22,0.44); }
         .btn-o:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(249,115,22,0.6); }
         .btn-o:active { transform: scale(0.97); }
-        .btn-b {
-          background: linear-gradient(135deg,#1a56db,#1e3a8a);
-          color: #fff; border: none; border-radius: 50px; width: 100%;
-          font-family: 'Nunito',sans-serif; font-weight: 800;
-          cursor: pointer; transition: transform 0.18s, box-shadow 0.18s;
-          box-shadow: 0 6px 20px rgba(26,86,219,0.35);
-        }
+        .btn-b { background: linear-gradient(135deg,#1a56db,#1e3a8a); color: #fff; border: none; border-radius: 50px; width: 100%; font-family: 'Nunito',sans-serif; font-weight: 800; cursor: pointer; transition: transform 0.18s, box-shadow 0.18s; box-shadow: 0 6px 20px rgba(26,86,219,0.35); }
         .btn-b:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(26,86,219,0.52); }
-
-        /* ── SECTIONS ── */
+        .btn-b:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
         .sec { width: 100%; padding: 80px 60px; }
         .sec-in { max-width: 1200px; margin: 0 auto; }
         .sec-hd { text-align: center; margin-bottom: 52px; }
         .st { font-family: 'Bebas Neue',sans-serif; font-size: 48px; letter-spacing: 1px; display: block; }
-
-        /* ── GRIDS ── */
         .g3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 28px; }
         .g4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 22px; }
         .g5 { display: grid; grid-template-columns: repeat(5,1fr); gap: 18px; }
-
-        /* ── PILLS ── */
         .pill-b { display:inline-block; background:#dbeafe; color:#1a56db; border-radius:50px; padding:6px 18px; font-size:13px; font-weight:700; margin-bottom:12px; }
         .pill-w { display:inline-block; background:rgba(255,255,255,0.16); color:#fff; border-radius:50px; padding:6px 18px; font-size:13px; font-weight:700; margin-bottom:14px; }
-
-        /* ── CARD HOVER ── */
         .card { transition: transform 0.22s, box-shadow 0.22s; }
         .card:hover { transform: translateY(-5px); }
-
-        /* ── PULSE ── */
-        @keyframes pulse {
-          0%,100% { box-shadow: 0 6px 22px rgba(249,115,22,0.44); }
-          50%      { box-shadow: 0 6px 36px rgba(249,115,22,0.72), 0 0 0 6px rgba(249,115,22,0.14); }
-        }
+        @keyframes pulse { 0%,100% { box-shadow: 0 6px 22px rgba(249,115,22,0.44); } 50% { box-shadow: 0 6px 36px rgba(249,115,22,0.72), 0 0 0 6px rgba(249,115,22,0.14); } }
         .pulse { animation: pulse 2.5s ease-in-out infinite; }
-
-        /* ── BADGES ROW ── */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; margin-right: 8px; vertical-align: middle; }
         .brow { display:flex; gap:12px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
         .brow::-webkit-scrollbar { display:none; }
-
-        /* ── COUNTDOWN ── */
         .crow { display:flex; gap:10px; }
-
-        /* ── MOBILE STICKY ── */
         .mob-bar { display:none; position:fixed; bottom:0; left:0; width:100%; z-index:998; background:#fff; padding:12px 16px; box-shadow:0 -4px 18px rgba(0,0,0,0.1); border-top:2px solid #e5edff; }
-
-        /* ══════════════════════════════
-           RESPONSIVE BREAKPOINTS
-        ══════════════════════════════ */
-
-        /* Large desktop */
-        @media (max-width: 1200px) {
-          .hero-grid { padding: 56px 40px 52px; gap: 48px; grid-template-columns: 1fr 400px; }
-          .stats { padding: 22px 40px; }
-          .sec { padding: 72px 40px; }
-          .hl { font-size: 64px; }
-        }
-
-        /* Tablet landscape */
-        @media (max-width: 1024px) {
-          .hero-grid { padding: 48px 32px 44px; gap: 36px; grid-template-columns: 1fr 370px; }
-          .stats { padding: 20px 32px; }
-          .sec { padding: 64px 32px; }
-          .hl { font-size: 56px; }
-          .g5 { grid-template-columns: repeat(3,1fr); }
-        }
-
-        /* Tablet portrait — STACK */
+        @media (max-width: 1200px) { .hero-grid { padding: 56px 40px 52px; gap: 48px; grid-template-columns: 1fr 400px; } .stats { padding: 22px 40px; } .sec { padding: 72px 40px; } .hl { font-size: 64px; } }
+        @media (max-width: 1024px) { .hero-grid { padding: 48px 32px 44px; gap: 36px; grid-template-columns: 1fr 370px; } .stats { padding: 20px 32px; } .sec { padding: 64px 32px; } .hl { font-size: 56px; } .g5 { grid-template-columns: repeat(3,1fr); } }
         @media (max-width: 860px) {
-          .nav { padding: 12px 20px; }
-          .nav-desk { display:none !important; }
-
-          .hero-grid {
-            grid-template-columns: 1fr !important;
-            padding: 36px 20px 44px;
-            gap: 32px;
-          }
-          .hero-left { text-align: center; }
-          .hl { font-size: 48px; }
-          .hero-p { max-width: 100% !important; }
-          .brow { justify-content: center; }
-          .crow { justify-content: center; }
-          .ctas-desk { display:none !important; }
-          .cta-mob { display:block !important; }
-
-          .stats { padding: 18px 20px; gap: 8px; }
-          .stats .snum { font-size: 28px !important; }
-          .stats .slbl { font-size: 11px !important; }
-
-          .sec { padding: 52px 20px; }
-          .st { font-size: 32px; }
-          .sec-hd { margin-bottom: 36px; }
-
-          .g3 { grid-template-columns: 1fr; gap: 18px; }
-          .g4 { grid-template-columns: repeat(2,1fr); gap: 16px; }
-          .g5 { grid-template-columns: repeat(2,1fr); gap: 14px; }
-
-          .mob-bar { display:block; }
-          footer { padding-bottom: 84px !important; }
+          .nav { padding: 12px 20px; } .nav-desk { display:none !important; }
+          .hero-grid { grid-template-columns: 1fr !important; padding: 36px 20px 44px; gap: 32px; }
+          .hero-left { text-align: center; } .hl { font-size: 48px; } .hero-p { max-width: 100% !important; }
+          .brow { justify-content: center; } .crow { justify-content: center; }
+          .ctas-desk { display:none !important; } .cta-mob { display:block !important; }
+          .stats { padding: 18px 20px; gap: 8px; } .stats .snum { font-size: 28px !important; } .stats .slbl { font-size: 11px !important; }
+          .sec { padding: 52px 20px; } .st { font-size: 32px; } .sec-hd { margin-bottom: 36px; }
+          .g3 { grid-template-columns: 1fr; gap: 18px; } .g4 { grid-template-columns: repeat(2,1fr); gap: 16px; } .g5 { grid-template-columns: repeat(2,1fr); gap: 14px; }
+          .mob-bar { display:block; } footer { padding-bottom: 84px !important; }
         }
-
-        /* Mobile small */
-        @media (max-width: 480px) {
-          .hl { font-size: 38px; }
-          .g4 { grid-template-columns: 1fr; }
-          .cta-big { font-size: 16px !important; padding: 16px 28px !important; }
-        }
-
-        /* Hide mob cta on desktop */
+        @media (max-width: 480px) { .hl { font-size: 38px; } .g4 { grid-template-columns: 1fr; } .cta-big { font-size: 16px !important; padding: 16px 28px !important; } }
         .cta-mob { display: none; }
       `}</style>
 
       <div className="app">
 
-        {/* ── NAV ── */}
+        {/* NAV */}
         <nav className={"nav" + (scrolled ? " solid" : "")}>
           <div style={{ display:"flex", alignItems:"center", gap:10 }}>
             <div style={{ width:36, height:36, background:"linear-gradient(135deg,#1a56db,#1e3a8a)", borderRadius:9, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, flexShrink:0 }}>🎓</div>
@@ -288,9 +154,8 @@ export default function App() {
           </button>
         </nav>
 
-        {/* ── HERO ── */}
+        {/* HERO */}
         <section className="hero">
-          {/* deco circles */}
           <div style={{ position:"absolute", width:360, height:360, borderRadius:"50%", border:"1px solid rgba(255,255,255,0.06)", top:"-5%", right:"8%", pointerEvents:"none" }} />
           <div style={{ position:"absolute", width:200, height:200, borderRadius:"50%", border:"1px solid rgba(255,255,255,0.05)", bottom:"15%", left:"3%", pointerEvents:"none" }} />
 
@@ -303,18 +168,14 @@ export default function App() {
                   <span style={{ fontSize:13, fontWeight:700, color:"#fcd34d" }}>December 21, Sunday · All 4 Branches</span>
                 </span>
               </div>
-
               <h1 className="hl" style={{ marginBottom:18 }}>
                 Hyderabad's<br />
                 <span style={{ color:"#fbbf24" }}>BIGGEST</span><br />
                 Scholarship Test
               </h1>
-
               <p className="hero-p" style={{ fontSize:17, color:"rgba(255,255,255,0.88)", lineHeight:1.7, marginBottom:26, maxWidth:500 }}>
                 Win from a <strong style={{ color:"#fbbf24" }}>₹2 Crore Scholarship Pool</strong>. Every student scoring 50%+ gets guaranteed fee benefits. Registration is 100% FREE!
               </p>
-
-              {/* Reward badges */}
               <div className="brow" style={{ marginBottom:26 }}>
                 {[
                   { s:"95%+", l:"100% Fee Waiver", bg:"linear-gradient(135deg,#f59e0b,#fbbf24)", c:"#1a1a2e" },
@@ -327,8 +188,6 @@ export default function App() {
                   </div>
                 ))}
               </div>
-
-              {/* Countdown */}
               <div style={{ marginBottom:28 }}>
                 <div style={{ fontSize:11, color:"rgba(255,255,255,0.5)", letterSpacing:1.5, textTransform:"uppercase", marginBottom:8 }}>Exam Starts In</div>
                 <div className="crow">
@@ -340,8 +199,6 @@ export default function App() {
                   ))}
                 </div>
               </div>
-
-              {/* Desktop CTAs */}
               <div className="ctas-desk" style={{ display:"flex", gap:16, alignItems:"center", flexWrap:"wrap" }}>
                 <button className="btn-o pulse" onClick={goForm} style={{ fontSize:16, padding:"15px 36px" }}>🎓 Register for FREE Now</button>
                 <div style={{ display:"flex", gap:16, color:"rgba(255,255,255,0.8)", fontSize:14 }}>
@@ -349,8 +206,6 @@ export default function App() {
                   <span><span style={{ color:"#4ade80" }}>✓</span> Instant registration</span>
                 </div>
               </div>
-
-              {/* Mobile CTA */}
               <button className="btn-o cta-mob" onClick={goForm} style={{ width:"100%", fontSize:17, padding:"16px", marginTop:6 }}>
                 🎓 Register for FREE Now
               </button>
@@ -361,7 +216,6 @@ export default function App() {
               <div style={{ position:"absolute", top:-15, left:"50%", transform:"translateX(-50%)", background:"linear-gradient(135deg,#f97316,#dc2626)", color:"#fff", borderRadius:50, padding:"7px 22px", fontSize:13, fontWeight:800, whiteSpace:"nowrap", boxShadow:"0 4px 14px rgba(249,115,22,0.4)" }}>
                 🆓 FREE Registration
               </div>
-
               {!submitted ? (
                 <>
                   <h3 style={{ fontFamily:"'Bebas Neue'", fontSize:26, color:"#1a56db", textAlign:"center", marginBottom:4 }}>Register Your Child</h3>
@@ -378,8 +232,8 @@ export default function App() {
                       <option value="">Select Branch *</option>
                       {BRANCHES.map((b)=><option key={b.name} value={b.name}>{b.full}</option>)}
                     </select>
-                    <button className="btn-b" onClick={submit} style={{ fontSize:16, padding:"15px" }}>
-                      Register Now – It's FREE! 🎓
+                    <button className="btn-b" onClick={submit} disabled={loading} style={{ fontSize:16, padding:"15px" }}>
+                      {loading ? <><span className="spinner"></span>Submitting...</> : "Register Now – It's FREE! 🎓"}
                     </button>
                   </div>
                   <p style={{ fontSize:11, color:"#9ca3af", textAlign:"center", marginTop:10 }}>🔒 Your information is safe with us.</p>
@@ -411,15 +265,13 @@ export default function App() {
           </div>
         </section>
 
-        {/* ── SCHOLARSHIP REWARDS ── */}
+        {/* SCHOLARSHIP REWARDS */}
         <section className="sec" style={{ background:"#fff" }}>
           <div className="sec-in">
             <div className="sec-hd">
               <div className="pill-b">SCHOLARSHIP STRUCTURE</div>
               <span className="st" style={{ color:"#1a1a2e" }}>Your Score = Your Scholarship</span>
-              <p style={{ color:"#6b7280", fontSize:16, maxWidth:460, margin:"10px auto 0", lineHeight:1.65 }}>
-                Every student scoring above 50% wins. Higher the score, bigger the reward!
-              </p>
+              <p style={{ color:"#6b7280", fontSize:16, maxWidth:460, margin:"10px auto 0", lineHeight:1.65 }}>Every student scoring above 50% wins. Higher the score, bigger the reward!</p>
             </div>
             <div className="g3">
               {[
@@ -443,7 +295,7 @@ export default function App() {
           </div>
         </section>
 
-        {/* ── BRANCHES ── */}
+        {/* BRANCHES */}
         <section className="sec" style={{ background:"#f0f4ff" }}>
           <div className="sec-in">
             <div className="sec-hd">
@@ -466,9 +318,7 @@ export default function App() {
                       <span>📞</span>
                       <a href={"tel:"+b.phone} style={{ fontSize:14, color:"#1a56db", fontWeight:700, textDecoration:"none" }}>{b.phone}</a>
                     </div>
-                    <button className="btn-b" onClick={goForm} style={{ fontSize:13, padding:"11px" }}>
-                      Register – {b.name} →
-                    </button>
+                    <button className="btn-b" onClick={goForm} style={{ fontSize:13, padding:"11px" }}>Register – {b.name} →</button>
                   </div>
                 </div>
               ))}
@@ -476,7 +326,7 @@ export default function App() {
           </div>
         </section>
 
-        {/* ── ABOUT ── */}
+        {/* ABOUT */}
         <section className="sec" style={{ background:"linear-gradient(150deg,#0a1f6e,#1a56db)" }}>
           <div className="sec-in" style={{ textAlign:"center" }}>
             <div className="pill-w">OUR LEGACY</div>
@@ -504,7 +354,7 @@ export default function App() {
           </div>
         </section>
 
-        {/* ── TESTIMONIALS ── */}
+        {/* TESTIMONIALS */}
         <section className="sec" style={{ background:"#fff" }}>
           <div className="sec-in">
             <div className="sec-hd">
@@ -529,7 +379,7 @@ export default function App() {
           </div>
         </section>
 
-        {/* ── FAQ ── */}
+        {/* FAQ */}
         <section className="sec" style={{ background:"#f0f4ff" }}>
           <div style={{ maxWidth:700, margin:"0 auto" }}>
             <div className="sec-hd">
@@ -539,10 +389,7 @@ export default function App() {
             <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
               {FAQS.map((f,i)=>(
                 <div key={i} style={{ background:"#fff", borderRadius:14, overflow:"hidden", boxShadow:"0 2px 10px rgba(0,0,0,0.05)", border:openFaq===i?"2px solid #1a56db":"2px solid transparent", transition:"border-color 0.2s" }}>
-                  <button
-                    onClick={()=>setOpenFaq(openFaq===i ? null : i)}
-                    style={{ width:"100%", padding:"17px 20px", background:"none", border:"none", display:"flex", justifyContent:"space-between", alignItems:"center", cursor:"pointer", fontFamily:"'Nunito',sans-serif", gap:10 }}
-                  >
+                  <button onClick={()=>setOpenFaq(openFaq===i ? null : i)} style={{ width:"100%", padding:"17px 20px", background:"none", border:"none", display:"flex", justifyContent:"space-between", alignItems:"center", cursor:"pointer", fontFamily:"'Nunito',sans-serif", gap:10 }}>
                     <span style={{ fontWeight:700, fontSize:15, color:"#1a1a2e", textAlign:"left" }}>{f.q}</span>
                     <span style={{ fontSize:22, color:"#1a56db", flexShrink:0, fontWeight:300, display:"inline-block", transform:openFaq===i?"rotate(45deg)":"rotate(0deg)", transition:"transform 0.25s ease" }}>+</span>
                   </button>
@@ -557,7 +404,7 @@ export default function App() {
           </div>
         </section>
 
-        {/* ── FINAL CTA ── */}
+        {/* FINAL CTA */}
         <section className="sec" style={{ background:"linear-gradient(135deg,#f97316,#dc2626)", textAlign:"center" }}>
           <div style={{ maxWidth:640, margin:"0 auto" }}>
             <h2 style={{ fontFamily:"'Bebas Neue'", fontSize:52, lineHeight:1.1, letterSpacing:1, color:"#fff", marginBottom:14 }}>
@@ -566,29 +413,23 @@ export default function App() {
             <p style={{ fontSize:17, color:"rgba(255,255,255,0.9)", lineHeight:1.65, maxWidth:480, margin:"0 auto 32px" }}>
               Join students across Hyderabad competing for ₹2 Crore in scholarships. December 21st — don't miss it!
             </p>
-            <button
-              onClick={goForm}
-              className="btn-o cta-big"
-              style={{ fontSize:20, padding:"18px 52px", background:"#fff", color:"#f97316", boxShadow:"0 10px 34px rgba(0,0,0,0.18)" }}
+            <button onClick={goForm} className="btn-o cta-big" style={{ fontSize:20, padding:"18px 52px", background:"#fff", color:"#f97316", boxShadow:"0 10px 34px rgba(0,0,0,0.18)" }}
               onMouseEnter={(e)=>{ e.currentTarget.style.transform="scale(1.04)"; }}
-              onMouseLeave={(e)=>{ e.currentTarget.style.transform="scale(1)"; }}
-            >
+              onMouseLeave={(e)=>{ e.currentTarget.style.transform="scale(1)"; }}>
               🎓 Register for Free Now
             </button>
-            <p style={{ marginTop:14, fontSize:13, color:"rgba(255,255,255,0.65)" }}>
-              Seats are limited · Scholarships based on availability
-            </p>
+            <p style={{ marginTop:14, fontSize:13, color:"rgba(255,255,255,0.65)" }}>Seats are limited · Scholarships based on availability</p>
           </div>
         </section>
 
-        {/* ── FOOTER ── */}
+        {/* FOOTER */}
         <footer style={{ background:"#0a1f6e", color:"rgba(255,255,255,0.5)", textAlign:"center", padding:"24px 20px", fontSize:13 }}>
           <div style={{ color:"rgba(255,255,255,0.88)", fontWeight:800, marginBottom:5, fontSize:14 }}>Vignan Schools Hyderabad</div>
           <div>ECIL · Patancheru · Medchal · Ghatkesar</div>
           <div style={{ marginTop:5 }}>© 2025 Vignan Schools. All rights reserved.</div>
         </footer>
 
-        {/* ── MOBILE STICKY BAR ── */}
+        {/* MOBILE STICKY BAR */}
         <div className="mob-bar">
           <button className="btn-o pulse" onClick={goForm} style={{ width:"100%", fontSize:16, padding:"15px" }}>
             🎓 Register FREE – Dec 21st Scholarship Test
