@@ -2,10 +2,10 @@ import { useState, useEffect } from "react";
 import './index.css';
 
 const BRANCHES = [
-  { name: "ECIL", full: "Vignan School – ECIL", address: "Plot No. 12, ECIL Cross Roads, Hyderabad – 500062", phone: "+91 98765 43210" },
-  { name: "Patancheru", full: "Vignan School – Patancheru", address: "Survey No. 45, Patancheru, Sangareddy – 502319", phone: "+91 98765 43211" },
-  { name: "Medchal", full: "Vignan School – Medchal", address: "NH-44, Medchal Road, Medchal – 501401", phone: "+91 98765 43212" },
-  { name: "Ghatkesar", full: "Vignan School – Ghatkesar", address: "Beside RTC Bus Stand, Ghatkesar – 501301", phone: "+91 98765 43213" },
+  { name: "ECIL", full: "Vignan School – ECIL", address: "Lotus Colony, Shiva Sai Enclave, Shilpa Nagar, Nagaram, ECIL, Telangana 500083", phone: "+91 97019 33455" },
+  { name: "Patancheru", full: "Vignan School – Patancheru", address: "Chinna Kanjarla, Doultabad Road Patancheru, Hyderabad, Telangana 502319", phone: "+91 97019 33455" },
+  { name: "Medchal", full: "Vignan School – Medchal", address: "Near Santha Bio Tech, Court Road, Athvelly, Medchal, Secunderabad, Telangana 501401", phone: "+91 97019 33455" },
+  { name: "Ghatkesar", full: "Vignan School – Ghatkesar", address: "Kondapur Village, Ghatkesar Mandal & Post Ranga Reddy District, Hyderabad, Telangana 501301", phone: "+91 97019 33455" },
 ];
 
 const FAQS = [
@@ -23,7 +23,7 @@ const TESTIMONIALS = [
 ];
 
 export default function App() {
-  const [openFaq, setOpenFaq] = useState(null);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [form, setForm] = useState({ name: "", parent: "", phone: "", grade: "", branch: "" });
   const [submitted, setSubmitted] = useState(false);
   const [scrolled, setScrolled] = useState(false);
